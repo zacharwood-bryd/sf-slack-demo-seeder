@@ -58,6 +58,8 @@ Map each beat:
 
 A beat that maps to none becomes a Case. Tag the Name or Subject, and the Description, with `[demo-builder:<id>]`. Use an Industry picklist value the org already has. Describe the object before you set one.
 
+Account, Case, and Opportunity are the default when the story fits them. When a beat needs a new object or field, create it through the Salesforce metadata connection before you insert records. When a beat needs Apex, deploy it with `sf project deploy` against this org. Apex is not created through the same calls that insert records. If that login cannot deploy, print the `metadata` gate and stop.
+
 ## Hand off the connector
 
 When the workspace and the records exist, print the `slack-salesforce` gate with the new workspace name. A person adds Salesforce for Slack to that workspace and connects it to the org you seeded. Do this handoff on every demo, even when the org was connected to an older workspace.
@@ -75,4 +77,3 @@ Write `demos/<id>.json` with `salesforceIds` as `[]`. Write record ids and the S
 - Put the demo in a workspace that already existed.
 - Call `chat.postMessage`, or deploy a flow, named credential, or HTTP callout, to publish records into Slack.
 - Put an org name, a host, a user, or a token from the person's own systems into a committed file.
-- Deploy new objects, fields, or Apex.

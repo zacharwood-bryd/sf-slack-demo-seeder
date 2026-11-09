@@ -47,7 +47,12 @@ const metadata = buildPlan(
   },
   catalog,
 );
-assert.ok(metadata.manualSteps.some((step) => step.id === "metadata"));
+assert.equal(metadata.manualSteps.some((step) => step.id === "metadata"), false);
+assert.ok(metadata.agentSteps.some((step) => step.id === "metadata"));
+assert.match(
+  metadata.agentSteps.find((step) => step.id === "metadata").detail,
+  /Salesforce metadata connection/,
+);
 assert.equal(mapBeat("A new custom object tracks claims.").includes("Case"), true);
 
 const haystack = JSON.stringify(channelPlan).toLowerCase();

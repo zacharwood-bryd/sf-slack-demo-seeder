@@ -97,7 +97,6 @@ export function buildPlan(input, catalog) {
   const mapped = beats.map(mapBeat);
 
   const manualIds = ["install-slack-app", "slack-token", "salesforce-connect", "slack-salesforce"];
-  if (wantsMetadata) manualIds.push("metadata");
 
   const surface = `Create a workspace named ${workspaceName} with admin.teams.create. Use team_domain ${workspaceDomain}. The app is already installed on the Enterprise Grid org and granted to new workspaces. Pass the new workspace id as team_id on workspace-level calls. Do not post a message. Salesforce for Slack is connected by hand after this workspace exists.`;
 
@@ -113,6 +112,15 @@ export function buildPlan(input, catalog) {
       detail: surface,
     },
   ];
+
+  if (wantsMetadata) {
+    agentSteps.push({
+      id: "metadata",
+      title: "Create the metadata this story needs",
+      detail:
+        "Create custom objects and custom fields through the Salesforce metadata connection before inserting records. Deploy Apex with the Salesforce CLI against this org. Apex is not created through the record calls. If that login cannot deploy, print the metadata gate and stop.",
+    });
+  }
 
   beats.forEach((beat, index) => {
     const objects = mapped[index];

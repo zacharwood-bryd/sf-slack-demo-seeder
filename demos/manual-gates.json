@@ -22,8 +22,8 @@
     },
     {
       "id": "metadata",
-      "title": "Create new objects, fields, or Apex yourself",
-      "detail": "This brief asks for a new object, field, or Apex. Add it in Salesforce Setup, or take it out of the story. The agent creates records on objects the org already has."
+      "title": "Deploy metadata only if the agent is refused",
+      "detail": "The agent creates custom objects and custom fields through the Salesforce connection, and deploys Apex with the Salesforce CLI. Do this in Setup only when that login cannot deploy. Otherwise leave it to the agent."
     }
   ]
 }

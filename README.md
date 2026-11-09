@@ -79,7 +79,7 @@ node scripts/plan.test.mjs
 - Installing the workspace app on the Enterprise Grid org and granting it to future workspaces.
 - Storing the org-admin token.
 - Connecting Salesforce for Slack to each new workspace. This one is every demo.
-- Creating a new object, field, or Apex class, if the story needs one. The default path uses Account, Case, and Opportunity.
+- Deploying metadata in Setup, and only when the agent's Salesforce login cannot deploy. A new object or field is created through the Salesforce connection. Apex is deployed with the Salesforce CLI. Account, Case, and Opportunity are still the default when the story fits them.
 
 ## License
 
