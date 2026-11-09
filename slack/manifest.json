@@ -4,26 +4,19 @@
     "minor_version": 1
   },
   "display_information": {
-    "name": "Demo Publisher",
-    "description": "Publishes Salesforce demo updates into a new Slack workspace. People do not message this app.",
+    "name": "Demo Workspaces",
+    "description": "Creates a Slack workspace for a Salesforce demo. People do not message this app. Salesforce data reaches Slack through the native Salesforce for Slack connection.",
     "background_color": "#0f5f5b"
   },
   "features": {
     "bot_user": {
-      "display_name": "Demo Publisher",
+      "display_name": "Demo Workspaces",
       "always_online": false
     }
   },
   "oauth_config": {
     "scopes": {
       "bot": [
-        "channels:join",
-        "channels:manage",
-        "channels:read",
-        "chat:write",
-        "chat:write.public",
-        "groups:read",
-        "groups:write",
         "team:read"
       ],
       "user": [

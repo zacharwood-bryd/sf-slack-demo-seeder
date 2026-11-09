@@ -2,18 +2,20 @@
 name: demo-builder
 description: >-
   Build a Salesforce demo and a new Slack Enterprise Grid workspace for it.
-  Use when someone gives an industry, a use case, and a flow and wants a
-  coding agent to seed the connected Salesforce org and publish changes into
-  that new workspace. The Slack app is a publisher, not a bot people talk to.
+  Use when someone gives an industry, a use case, and a story and wants a
+  coding agent to seed the connected Salesforce org and create that workspace.
+  Connecting Slack to Salesforce is manual, every demo, through Salesforce for Slack.
 ---
 
 # Demo builder
 
-You are the coding agent. The person gives you an industry, a use case, and the flow. You seed the Salesforce org this session is signed into, and you create a new Slack workspace for that story. Later Salesforce changes post into that workspace on their own.
+You are the coding agent. The person gives you an industry, a use case, and the story. You seed the Salesforce org this session is signed into, and you create a new Slack workspace for that story.
 
-This is only installed on a Slack Enterprise Grid org. One install of Demo Publisher covers the org. Every demo is a new workspace, with `#updates` inside it for the posts.
+You do not connect Slack to Salesforce. That connection is Salesforce for Slack, Salesforce's native connector, and a person sets it up by hand for every new workspace. You do not deploy a flow, a named credential, or an HTTP callout to make records appear in Slack.
 
-Do not build a website. Do not build a Slack bot that replies to people. Do not reuse an existing workspace for a new story. The app in `slack/manifest.json` posts messages and is granted to workspaces the org creates later.
+This is only installed on a Slack Enterprise Grid org. One install of the app in `slack/manifest.json` covers the org. That app creates workspaces. It does not post messages. Every demo is a new workspace.
+
+Do not build a website. Do not build a Slack bot that replies to people. Do not reuse an existing workspace for a new story.
 
 The human instructions are in `README.md`. Gate text is in `demos/manual-gates.json`. Build the plan with `scripts/plan.mjs`:
 
@@ -37,22 +39,19 @@ console.log(JSON.stringify(spec, null, 2));
 ## Before any write
 
 1. Identify the Salesforce org the session is signed into. That is the org you seed. A demo org is the usual choice. You do not keep a list of allowed or forbidden orgs.
-2. Confirm Demo Publisher is installed on the Enterprise Grid org and granted to future workspaces. If it is not, print the `install-slack-app` gate and stop.
-3. You need two tokens, neither of them in git. The org-admin user token calls `admin.teams.create`. The bot token is the Salesforce named credential that posts to Slack. If either is missing, print the `slack-token` gate and stop.
+2. Confirm the workspace app is installed on the Enterprise Grid org and granted to future workspaces. If it is not, print the `install-slack-app` gate and stop.
+3. You need the org-admin user token in the agent's secret store. It calls `admin.teams.create`. If it is missing, print the `slack-token` gate and stop. Do not ask for a bot token to store in Salesforce.
 
 ## Intake
 
-Ask only for what the message left out: industry, use case, ordered beats, and the company name when the beats do not name the account.
+Ask only for what the message left out: industry, use case, ordered beats, and the company name when the beats do not name the account. The beats are the demo story. They are not a Salesforce flow.
 
 ## New workspace
 
 The plan names the workspace after the company and sets `team_domain` to the demo id, cut to 21 characters.
 
 1. `admin.teams.create` with `team_name` and `team_domain` from the plan. Save the returned team id.
-2. In that workspace, `conversations.create` for `#updates`. Pass `team_id` when the token is an org token. Invite Demo Publisher.
-3. If the app was not granted to future workspaces, stop and say the workspace exists but Demo Publisher is not in it yet. Do not post from a different workspace.
-
-Do not call `chat.postMessage` yourself except to prove the token. Ongoing posts belong to the Salesforce flow, aimed at `#updates` in this workspace.
+2. Stop. Do not call `chat.postMessage`. Do not invite a bot to post updates.
 
 ## Salesforce records
 
@@ -66,28 +65,21 @@ Map each beat:
 
 A beat that maps to none becomes a Case. Tag the Name or Subject, and the Description, with `[demo-builder:<id>]`. Use an Industry picklist value the org already has. Describe the object before you set one.
 
-The publisher flow watches Case, so the story needs a Case whose Subject contains the tag.
+## Hand off the connector
 
-## Publisher flow
+When the workspace and the records exist, print the `slack-salesforce` gate with the new workspace name. A person adds Salesforce for Slack to that workspace and connects it to the org you seeded. Do this handoff on every demo, even when the org was connected to an older workspace.
 
-After the records exist, the demo is not done until Case changes post into the new workspace.
-
-- After-save flow on Case.
-- Filter: Subject contains `[demo-builder:<id>]`.
-- Create and Status changes both send `salesforce/slack-post.json` to `https://slack.com/api/chat.postMessage`.
-- Channel id is `#updates` in the workspace you just created.
-- Authorization is the named credential. Never paste a token into the flow, the spec, or git.
-
-Deploy with the Salesforce CLI or the Metadata API when the org login can deploy. When it cannot, print the `flow-deploy` gate and stop with the flow still inactive. Say that the workspace and the records exist, and Slack will stay quiet until the flow is deployed.
+Do not deploy a flow to send the records. Do not create a named credential. The native connector is the integration.
 
 ## Save
 
-Write `demos/<id>.json` with `salesforceIds` as `[]`. Write record ids, the Slack team id, and the channel id only to `demos/<id>.links.json`. That links file is gitignored.
+Write `demos/<id>.json` with `salesforceIds` as `[]`. Write record ids and the Slack team id only to `demos/<id>.links.json`. That links file is gitignored.
 
 ## Never
 
 - Add a slash command, an app home conversation, or a bot people talk to.
 - Build a web app for the brief.
 - Put the demo in a workspace that already existed.
+- Call `chat.postMessage`, or deploy a flow, named credential, or HTTP callout, to publish records into Slack.
 - Put an org name, a host, a user, or a token from the person's own systems into a committed file.
-- Deploy new objects, fields, or Apex. The publisher flow is the only metadata this skill deploys.
+- Deploy new objects, fields, or Apex.

@@ -94,20 +94,18 @@ export function buildPlan(input, catalog) {
   const tag = `demo-builder:${id}`;
   const workspaceName = company;
   const workspaceDomain = id.slice(0, 21).replace(/-+$/g, "");
-  const channel = "updates";
   const mapped = beats.map(mapBeat);
 
-  const manualIds = ["install-slack-app", "slack-token", "salesforce-connect", "flow-deploy"];
+  const manualIds = ["install-slack-app", "slack-token", "salesforce-connect", "slack-salesforce"];
   if (wantsMetadata) manualIds.push("metadata");
 
-  const surface = `Create a workspace named ${workspaceName} with admin.teams.create. Use team_domain ${workspaceDomain}. The app is already installed on the Enterprise Grid org and granted to new workspaces. In that workspace create #${channel}, invite Demo Publisher, and send every post there. Pass the new workspace id as team_id on workspace-level calls.`;
+  const surface = `Create a workspace named ${workspaceName} with admin.teams.create. Use team_domain ${workspaceDomain}. The app is already installed on the Enterprise Grid org and granted to new workspaces. Pass the new workspace id as team_id on workspace-level calls. Do not post a message. Salesforce for Slack is connected by hand after this workspace exists.`;
 
   const agentSteps = [
     {
       id: "confirm-org",
       title: "Confirm the demo org",
-      detail:
-        "Use the Salesforce org this session is signed into. Create the records and the publisher flow there.",
+      detail: "Use the Salesforce org this session is signed into. Create the records there. Do not deploy a flow.",
     },
     {
       id: "slack-surface",
@@ -126,18 +124,18 @@ export function buildPlan(input, catalog) {
   });
 
   agentSteps.push({
-    id: "publish-flow",
-    title: "Wire Salesforce changes to Slack",
-    detail: `Activate an after-save flow on Case for records whose Subject contains [${tag}]. On create and on Status change, POST the body in salesforce/slack-post.json to the channel from this plan. The named credential holds the bot token.`,
+    id: "handoff-connector",
+    title: "Hand off the Slack connection",
+    detail: `Stop here. Tell the person to connect the ${workspaceName} workspace to this Salesforce org with Salesforce for Slack. Do not deploy a flow, a named credential, or a callout. The native connector is what shows these records in Slack.`,
   });
   agentSteps.push({
     id: "save-spec",
     title: "Save the spec",
-    detail: `Write this plan to demos/${id}.json with salesforceIds left empty. Put record ids and the Slack channel id only in demos/${id}.links.json.`,
+    detail: `Write this plan to demos/${id}.json with salesforceIds left empty. Put record ids and the Slack workspace id only in demos/${id}.links.json.`,
   });
 
-  const message = [
-    `*${company}*`,
+  const story = [
+    company,
     sentence(useCase),
     ...beats.map((beat, index) => `${index + 1}. ${sentence(beat)}`),
     `Tag: [${tag}]`,
@@ -154,15 +152,14 @@ export function buildPlan(input, catalog) {
       mode: "workspace",
       workspaceName,
       workspaceDomain,
-      channel,
-      message,
+      story,
     },
     manualSteps: manualIds.map((item) => gate(gates, item)),
     agentSteps,
     talkTrack: [
       {
         label: "Open",
-        show: "Salesforce account, then the Slack channel",
+        show: "Salesforce account",
         say: `${company} is the ${industry.toLowerCase()} account. ${sentence(useCase)}`,
       },
       ...beats.map((beat, index) => ({
@@ -172,8 +169,8 @@ export function buildPlan(input, catalog) {
       })),
       {
         label: "Close",
-        show: `${workspaceName} / #${channel}`,
-        say: `Open the ${workspaceName} workspace. Change the case status in Salesforce. Demo Publisher posts in #${channel} without anyone typing in Slack.`,
+        show: workspaceName,
+        say: `Connect Salesforce for Slack to the ${workspaceName} workspace, then open it. The seeded records are what you show.`,
       },
     ],
     salesforceIds: [],

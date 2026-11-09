@@ -14,41 +14,40 @@
     "mode": "workspace",
     "workspaceName": "Northbridge Academy",
     "workspaceDomain": "education-advising",
-    "channel": "updates",
-    "message": "*Northbridge Academy*\nAn advisor picks up a student case when Maya Chen has waited two days for a course change.\n1. Northbridge Academy is the school account, and Maya Chen is the student.\n2. A case opens for a course change, waiting on the advisor.\n3. The case sits past two days.\n4. The case moves to closed when the advisor approves the change.\nTag: [demo-builder:education-advising]"
+    "story": "Northbridge Academy\nAn advisor picks up a student case when Maya Chen has waited two days for a course change.\n1. Northbridge Academy is the school account, and Maya Chen is the student.\n2. A case opens for a course change, waiting on the advisor.\n3. The case sits past two days.\n4. The case moves to closed when the advisor approves the change.\nTag: [demo-builder:education-advising]"
   },
   "manualSteps": [
     {
       "id": "install-slack-app",
-      "title": "Install the Slack app on the Enterprise Grid org",
-      "detail": "Create a Slack app from slack/manifest.json and install it on the Enterprise Grid org, not on a single workspace. Grant it to workspaces created later, and approve it if an admin must. Skip this when that org install already exists."
+      "title": "Install the workspace app on the Enterprise Grid org",
+      "detail": "Create a Slack app from slack/manifest.json and install it on the Enterprise Grid org, not on a single workspace. Grant it to workspaces created later, and approve it if an admin must. This app only creates workspaces. It is not the Salesforce for Slack app, and it does not post Salesforce updates. Skip this when that org install already exists."
     },
     {
       "id": "slack-token",
-      "title": "Store the Slack tokens",
-      "detail": "Put the bot token in a Salesforce named credential for https://slack.com/api. Keep the org-admin user token, the one with admin.teams:write, in the coding agent's secret store. The agent uses it to create a workspace. Keep both tokens out of git. Skip this when both are already stored."
+      "title": "Store the org-admin Slack token",
+      "detail": "Keep the org-admin user token, the one with admin.teams:write, in the coding agent's secret store. The agent uses it only to create a workspace. Do not put it in a Salesforce named credential. Keep it out of git. Skip this when it is already stored."
     },
     {
       "id": "salesforce-connect",
       "title": "Connect the Salesforce org to seed",
-      "detail": "Sign the coding agent into the Salesforce org that should receive the records and the publisher flow. A demo org is the usual choice. The agent uses whichever org that login opens."
+      "detail": "Sign the coding agent into the Salesforce org that should receive the records. A demo org is the usual choice. The agent uses whichever org that login opens. This login does not connect Slack."
     },
     {
-      "id": "flow-deploy",
-      "title": "Deploy the Salesforce flow that posts to Slack",
-      "detail": "The flow is an after-save flow on Case. It posts salesforce/slack-post.json into the new workspace when a tagged case is created or its status changes. Deploy it with the Salesforce CLI or Metadata API. Skip this when that flow is already active."
+      "id": "slack-salesforce",
+      "title": "Connect this workspace with Salesforce for Slack",
+      "detail": "Do this for every new workspace. Add the Salesforce for Slack app to that workspace and connect it to the Salesforce org you seeded. In Salesforce, finish Initial Slack Setup if this org is not already allowed to connect. That native connector is how records show up in Slack. Do not replace it with a flow, a named credential, or a call to chat.postMessage."
     }
   ],
   "agentSteps": [
     {
       "id": "confirm-org",
       "title": "Confirm the demo org",
-      "detail": "Use the Salesforce org this session is signed into. Create the records and the publisher flow there."
+      "detail": "Use the Salesforce org this session is signed into. Create the records there. Do not deploy a flow."
     },
     {
       "id": "slack-surface",
       "title": "Workspace Northbridge Academy",
-      "detail": "Create a workspace named Northbridge Academy with admin.teams.create. Use team_domain education-advising. The app is already installed on the Enterprise Grid org and granted to new workspaces. In that workspace create #updates, invite Demo Publisher, and send every post there. Pass the new workspace id as team_id on workspace-level calls."
+      "detail": "Create a workspace named Northbridge Academy with admin.teams.create. Use team_domain education-advising. The app is already installed on the Enterprise Grid org and granted to new workspaces. Pass the new workspace id as team_id on workspace-level calls. Do not post a message. Salesforce for Slack is connected by hand after this workspace exists."
     },
     {
       "id": "beat-1",
@@ -71,20 +70,20 @@
       "detail": "Create or update the Case. The case moves to closed when the advisor approves the change. Tag the Name or Subject, and the Description, with [demo-builder:education-advising]. Use an Industry picklist value the org already has."
     },
     {
-      "id": "publish-flow",
-      "title": "Wire Salesforce changes to Slack",
-      "detail": "Activate an after-save flow on Case for records whose Subject contains [demo-builder:education-advising]. On create and on Status change, POST the body in salesforce/slack-post.json to the channel from this plan. The named credential holds the bot token."
+      "id": "handoff-connector",
+      "title": "Hand off the Slack connection",
+      "detail": "Stop here. Tell the person to connect the Northbridge Academy workspace to this Salesforce org with Salesforce for Slack. Do not deploy a flow, a named credential, or a callout. The native connector is what shows these records in Slack."
     },
     {
       "id": "save-spec",
       "title": "Save the spec",
-      "detail": "Write this plan to demos/education-advising.json with salesforceIds left empty. Put record ids and the Slack channel id only in demos/education-advising.links.json."
+      "detail": "Write this plan to demos/education-advising.json with salesforceIds left empty. Put record ids and the Slack workspace id only in demos/education-advising.links.json."
     }
   ],
   "talkTrack": [
     {
       "label": "Open",
-      "show": "Salesforce account, then the Slack channel",
+      "show": "Salesforce account",
       "say": "Northbridge Academy is the education account. An advisor picks up a student case when Maya Chen has waited two days for a course change."
     },
     {
@@ -109,8 +108,8 @@
     },
     {
       "label": "Close",
-      "show": "Northbridge Academy / #updates",
-      "say": "Open the Northbridge Academy workspace. Change the case status in Salesforce. Demo Publisher posts in #updates without anyone typing in Slack."
+      "show": "Northbridge Academy",
+      "say": "Connect Salesforce for Slack to the Northbridge Academy workspace, then open it. The seeded records are what you show."
     }
   ],
   "salesforceIds": [],

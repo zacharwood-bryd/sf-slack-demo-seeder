@@ -12,15 +12,20 @@ assert.equal(channelPlan.id, "education-advising");
 assert.equal(channelPlan.slack.mode, "workspace");
 assert.equal(channelPlan.slack.workspaceName, "Northbridge Academy");
 assert.equal(channelPlan.slack.workspaceDomain, "education-advising");
-assert.equal(channelPlan.slack.channel, "updates");
-assert.match(channelPlan.slack.message, /Northbridge Academy/);
+assert.equal(channelPlan.slack.channel, undefined);
+assert.match(channelPlan.slack.story, /Northbridge Academy/);
 assert.match(channelPlan.agentSteps[1].detail, /admin\.teams\.create/);
 assert.deepEqual(
   channelPlan.manualSteps.map((step) => step.id),
-  ["install-slack-app", "slack-token", "salesforce-connect", "flow-deploy"],
+  ["install-slack-app", "slack-token", "salesforce-connect", "slack-salesforce"],
 );
 assert.equal(channelPlan.agentSteps[1].title, "Workspace Northbridge Academy");
-assert.ok(channelPlan.agentSteps.some((step) => step.id === "publish-flow"));
+assert.equal(channelPlan.agentSteps.some((step) => step.id === "publish-flow"), false);
+assert.ok(channelPlan.agentSteps.some((step) => step.id === "handoff-connector"));
+assert.match(
+  channelPlan.manualSteps.find((step) => step.id === "slack-salesforce").detail,
+  /every new workspace/,
+);
 
 const quiet = buildPlan(
   {
@@ -47,6 +52,10 @@ assert.equal(mapBeat("A new custom object tracks claims.").includes("Case"), tru
 
 const haystack = JSON.stringify(channelPlan).toLowerCase();
 assert.match(haystack, /admin\.teams\.create/);
+assert.match(haystack, /salesforce for slack/);
 assert.equal(haystack.includes("enable_section"), false);
+assert.equal(haystack.includes("flow-deploy"), false);
+assert.equal(haystack.includes("slack-post.json"), false);
+assert.match(haystack, /do not deploy a flow/);
 
 console.log("plan.test.mjs ok");
