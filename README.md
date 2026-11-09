@@ -2,7 +2,7 @@
 
 Give a coding agent an industry, a use case, and the story. The agent seeds the Salesforce org it is signed into, and creates a new Slack workspace for that story. You connect that workspace to Salesforce yourself, with Salesforce's native Slack connector.
 
-You talk to the coding agent. The Slack app in [`slack/manifest.json`](slack/manifest.json) only creates the workspace. The procedure the agent follows is [`.cursor/skills/demo-builder/SKILL.md`](.cursor/skills/demo-builder/SKILL.md).
+You talk to whichever coding agent you use. The Slack app in [`slack/manifest.json`](slack/manifest.json) only creates the workspace. The procedure that agent follows is [`AGENT.md`](AGENT.md).
 
 ```mermaid
 flowchart LR
@@ -50,23 +50,23 @@ That native connector is how the seeded records show up in Slack. This project d
 
 ## Give this to your coding agent
 
-Open this repository in Cursor. The project skill loads from [`.cursor/skills/demo-builder/SKILL.md`](.cursor/skills/demo-builder/SKILL.md).
+Point any coding agent at [`AGENT.md`](AGENT.md). You choose the industry, the company, the use case, and the story.
 
 ```text
-Follow .cursor/skills/demo-builder/SKILL.md
-Industry: Education
-Company: Northbridge Academy
-Use case: An advisor picks up a student case when Maya Chen has waited two days for a course change.
+Follow AGENT.md in this repository.
+
+Industry: <the industry for this demo>
+Company: <the company in the story>
+Use case: <one sentence>
 Story:
-- Northbridge Academy is the school account, and Maya Chen is the student.
-- A case opens for a course change, waiting on the advisor.
-- The case sits past two days.
-- The case moves to closed when the advisor approves the change.
+- <what exists at the start>
+- <what happens next>
+- <how it ends>
 ```
 
-The agent replies with the manual steps that are still open, creates a workspace named Northbridge Academy, and seeds the Salesforce records. It then stops and asks you to connect Salesforce for Slack to that workspace. You do not message the app.
+The agent replies with the manual steps that are still open, creates a Slack workspace named after the company, and seeds the Salesforce records. It then stops and asks you to connect Salesforce for Slack to that workspace. You do not message the app.
 
-[demos/education-advising.json](demos/education-advising.json) is that brief. Harbor & Pine Health in [demos/healthcare-prior-auth.json](demos/healthcare-prior-auth.json) is a second fictional story. Record ids and Slack ids, when an agent creates them, go in `demos/<id>.links.json`, which is gitignored.
+[demos/education-advising.json](demos/education-advising.json) and [demos/healthcare-prior-auth.json](demos/healthcare-prior-auth.json) are two filled-in examples. They are fictional, and they are not the only industries this builds. Record ids and Slack ids, when an agent creates them, go in `demos/<id>.links.json`, which is gitignored.
 
 Check the planner:
 
@@ -80,12 +80,6 @@ node scripts/plan.test.mjs
 - Storing the org-admin token.
 - Connecting Salesforce for Slack to each new workspace. This one is every demo.
 - Creating a new object, field, or Apex class, if the story needs one. The default path uses Account, Case, and Opportunity.
-
-## LinkedIn
-
-Paste this, and add the repository link:
-
-> I built a demo builder for Slack and Salesforce. You give a coding agent an industry, a use case, and the story. It seeds the Salesforce org and opens a new Slack workspace for that story. You connect the workspace with Salesforce's native Slack connector, which is the manual step each time. The skill is in the repo, so another agent can run the same build.
 
 ## License
 
