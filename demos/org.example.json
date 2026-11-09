@@ -6,6 +6,9 @@
   "trialExpires": "",
   "productionOrgLabels": ["Your production org's company name"],
   "productionOrgHosts": ["your-company.my.salesforce.com"],
-  "slackWorkspaceName": "Your demo Slack workspace",
-  "slackChannel": "#demo"
+  "slack": {
+    "orgName": "Your Slack org",
+    "enterpriseGrid": false,
+    "manifest": "slack/manifest.json"
+  }
 }

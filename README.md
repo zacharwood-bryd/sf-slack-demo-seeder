@@ -1,115 +1,110 @@
 # Demo builder for Slack and Salesforce
 
-You name an industry, a use case, and the flow. Your coding agent lists the setup that is still yours, then builds the Salesforce records and the talk track.
+Give a coding agent an industry, a use case, and the flow. The agent seeds a Salesforce demo org and wires it so record changes show up in Slack on their own.
 
-The manual steps are below. The skill your agent follows is [`.cursor/skills/demo-builder/SKILL.md`](.cursor/skills/demo-builder/SKILL.md). A small local app in [`app/`](app/) is the same plan, on one screen: the brief, the split between you and the agent, and a library of saved demos.
+You talk to the coding agent. The Slack app only publishes messages. Its manifest is [`slack/manifest.json`](slack/manifest.json). The procedure the agent follows is [`.cursor/skills/demo-builder/SKILL.md`](.cursor/skills/demo-builder/SKILL.md).
 
 ```mermaid
 flowchart LR
-  brief[Industry, use case, flow]
-  skill[demo-builder skill]
-  you[Manual steps]
-  agent[Records and talk track]
-  brief --> skill
-  skill --> you
-  skill --> agent
+  you[You and a coding agent]
+  salesforce[Salesforce demo org]
+  flow[Record-triggered flow]
+  app[Demo Publisher]
+  slack[Workspace or channel]
+
+  you -->|"scenario"| salesforce
+  salesforce --> flow
+  flow --> app
+  app --> slack
 ```
+
+One install of Demo Publisher serves every demo. On Enterprise Grid the agent creates a workspace per industry, then a channel inside it. On a single Slack workspace the agent creates a channel per demo. Both use the same manifest.
 
 ## Manual setup
 
-Do these once for a workspace. On the next demo the agent repeats only the steps that are still open.
+Do these once. On the next demo the agent repeats only the steps that are still open.
 
-### 1. Connect Slack
+### 1. Install the Slack app
 
-Sign your coding agent into Slack. Write down the workspace and the channel this demo should use.
+Create a Slack app from [`slack/manifest.json`](slack/manifest.json): Slack API, Create New App, From a manifest.
 
-The agent drafts the swarm message and files it on the demo spec. Posting the message, installing a Slack app, and approving a workspace prompt stay in Slack admin. An agent cannot click those.
+On Enterprise Grid, install it on the org, not on a single workspace, and approve it if your org requires an admin. That install can create workspaces. Set `slack.enterpriseGrid` to `true` in the local config after it succeeds.
 
-### 2. Connect a Salesforce demo org
+On one workspace, remove the `oauth_config.scopes.user` block from the manifest before you install. A workspace install cannot create other workspaces. Leave `slack.enterpriseGrid` false. Each demo gets a channel instead.
 
-Use a demo org, a sandbox, or a developer org where you can create accounts and cases. Keep production orgs out of this workflow.
+The app has no slash command and no conversation. It posts as Demo Publisher.
 
-Two ways in:
+### 2. Store the bot token in Salesforce
 
-- The Salesforce connector in your agent. Sign in as a user who can create records in the demo org.
-- A hosted Salesforce MCP server. In Setup, create an external client app with the OAuth callback your agent documents, add the server URL in the agent, and finish the login.
+From the install, create a named credential in the demo org for `https://slack.com/api` using the bot token as a bearer token. On Grid, keep the org-admin user token in the coding agent's secret store as well. The agent needs it for `admin.teams.create`.
 
-### 3. Mark the demo org and the production orgs
+Do not commit either token.
+
+### 3. Connect a Salesforce demo org
+
+Use a demo org, a sandbox, or a developer org where the agent can create accounts and cases. Keep production orgs out of this workflow.
+
+Sign the agent in with the Salesforce connector, or with a hosted MCP server whose external client app you create in Setup.
+
+### 4. Mark the orgs
 
 ```bash
 cp demos/org.example.json demos/org.local.json
 ```
 
-Set `demoOrgLabel` to the demo org's company name, the same name Salesforce shows on the company profile. Add every production org to `productionOrgLabels`, and add hosts under `productionOrgHosts` when you know them. Put the Slack workspace and channel in `slackWorkspaceName` and `slackChannel`.
+Set `demoOrgLabel` to the demo org's company name, the same name Salesforce shows on the company profile. Add every production org to `productionOrgLabels`. Set `slack.orgName` to your Slack org. Set `slack.enterpriseGrid` to `true` only after the org-level install.
 
-`demos/org.local.json` is gitignored. The example file has placeholders only.
+`demos/org.local.json` is gitignored.
 
-### 4. Stay on objects the org already has
+### 5. Let the agent deploy the publisher flow
 
-The agent creates and updates Accounts, Opportunities, Cases, and Slack demo bundle records. It tags each one `demo-builder:<id>` in the name and the description.
+The flow is an after-save flow on Case. When a case tagged `demo-builder:<id>` is created or its status changes, the flow POSTs [`salesforce/slack-post.json`](salesforce/slack-post.json) to Slack. The named credential supplies the token.
 
-When a story needs a new object, a new field, or Apex, create that in Setup yourself, or take it out of the flow. This builder works with records on the objects a demo org already ships with.
+If the agent's Salesforce login can create records but cannot deploy metadata, deploy this flow once with the Salesforce CLI. Later demos reuse it and only change the channel and the tag.
 
-### 5. Check a trial date
+### 6. Check a trial date
 
-If the demo org expires, set `trialExpires` in `demos/org.local.json` to `YYYY-MM-DD`. Renew or replace the org when that date is close. Leave the field empty when the org does not expire.
+If the demo org expires, set `trialExpires` to `YYYY-MM-DD`. Leave it empty when the org does not expire.
 
 ## Give this to your coding agent
 
 Open this repository in Cursor. The project skill loads from [`.cursor/skills/demo-builder/SKILL.md`](.cursor/skills/demo-builder/SKILL.md).
 
-Start with the industry, the use case, and the beats:
-
 ```text
 Follow .cursor/skills/demo-builder/SKILL.md
-Industry: Healthcare
-Use case: A nurse practitioner requests prior authorization for an MRI, and the payer team swarms in Slack when the case stalls.
+Industry: Education
+Company: Northbridge Academy
+Use case: An advisor picks up a student case when Maya Chen has waited two days for a course change.
 Flow:
-- Harbor & Pine Health is the member's clinic account, with Avery Cole as the patient on the chart.
-- A case is filed for prior authorization of an MRI, waiting on the clinical note.
-- The case stalls past the payer's two-day window.
-- Slack swarms the payer channel with the case, the missing note, and the owner.
-- The case moves to approved once the note arrives, and the swarm closes.
+- Northbridge Academy is the school account, and Maya Chen is the student.
+- A case opens for a course change, waiting on the advisor.
+- The case sits past two days.
+- The case moves to closed when the advisor approves the change.
 ```
 
-If your agent does not load project skills, @ that file or paste it into the chat, then send the same brief.
+The agent replies with the manual steps that are still open, then creates the Slack channel or workspace, the Salesforce records, and the flow. Changing the case status is what makes Demo Publisher post. You do not message the app.
 
-The agent replies with two lists before it writes anything: what you still do by hand, and what it will create. It writes only after the open manual steps are done, and only in the org named `demoOrgLabel`.
+[demos/education-advising.json](demos/education-advising.json) is that brief, planned for a single workspace. Harbor & Pine Health in [demos/healthcare-prior-auth.json](demos/healthcare-prior-auth.json) is a second fictional story. Record ids, when an agent creates them, go in `demos/<id>.links.json`, which is gitignored.
 
-## Worked example
-
-[demos/healthcare-prior-auth.json](demos/healthcare-prior-auth.json) is that brief, already split. Harbor & Pine Health is fictional. The file has the manual steps, the agent steps, and the talk track. Record ids, when an agent creates them, go in `demos/healthcare-prior-auth.links.json`, which is gitignored.
-
-## Run the app
-
-The app reads and writes the JSON specs. It does not hold Slack or Salesforce tokens.
+Check the planner:
 
 ```bash
-node app/plan.test.mjs
-node app/server.mjs
+node scripts/plan.test.mjs
 ```
 
-Open [http://127.0.0.1:4321](http://127.0.0.1:4321). Three views: a new brief, the split plan, and the library.
+## What the agent will leave to you
 
-## Demo spec
-
-Each file in `demos/` other than the org example and the gate catalog is one demo:
-
-| Field | Meaning |
-| --- | --- |
-| `industry`, `useCase`, `beats` | What you asked for. Beats are the flow, in order. |
-| `manualSteps` | Setup that stays with a person. The text comes from [demos/manual-gates.json](demos/manual-gates.json). |
-| `agentSteps` | Records and the talk track. |
-| `talkTrack` | What to show and what to say, beat by beat. |
-| `tag` | The marker written onto every Salesforce record, `demo-builder:<id>`. |
-| `salesforceIds` | Left empty in git. Live ids belong in `demos/<id>.links.json`. |
-| `slackDraft` | The message to post, when the flow uses Slack. You send it. |
+- Installing and approving the Slack app.
+- Putting tokens into the named credential and the agent secret store.
+- Deploying the flow when the Salesforce login cannot deploy metadata.
+- Creating a new object, field, or Apex class, if the story needs one. The default path uses Account, Case, and Opportunity.
+- Renewing a trial org.
 
 ## LinkedIn
 
 Paste this, and add the repository link:
 
-> I built a demo builder for Slack and Salesforce. You give it an industry, a use case, and the flow. It separates the setup you still click yourself from the records and the talk track a coding agent can build. The manual steps are in the README. The skill is in the repo, so you can hand it to your own agent.
+> I built a demo builder for Slack and Salesforce. You give a coding agent an industry, a use case, and the flow. It seeds the Salesforce demo and a Slack app publishes the changes into a channel, or into a new workspace on Enterprise Grid. The manual install steps are in the README. The skill is in the repo, so another agent can run the same build.
 
 ## License
 

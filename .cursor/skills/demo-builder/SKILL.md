@@ -1,85 +1,102 @@
 ---
 name: demo-builder
 description: >-
-  Build a Slack and Salesforce demo from an industry, a use case, and a flow.
-  Use when someone asks for a demo, a talk track, sample Salesforce records, or
-  a Slack swarm scenario. List the manual setup before any write. Refuse
-  production orgs. New objects, fields, and Apex stay with the human.
+  Build a Salesforce demo and publish its changes into Slack. Use when someone
+  gives an industry, a use case, and a flow and wants a coding agent to seed
+  the demo org and land the updates in Slack automatically. The Slack app is a
+  publisher, not a bot people talk to. Refuse production orgs.
 ---
 
 # Demo builder
 
-Build one demo at a time on a Salesforce demo org. The human supplies the industry, the use case, and the flow. You split that brief into steps they still do by hand and records you create, then you write the talk track.
+You are the coding agent. The person gives you an industry, a use case, and the flow. You seed the Salesforce demo org and wire a record-triggered flow so later changes show up in Slack on their own.
 
-The public instructions for the human are in `README.md`. The gate text lives in `demos/manual-gates.json`. The same rules are implemented in `app/plan.mjs`. Use that module when you need the split, instead of inventing a second one:
+Do not build a website. Do not build a Slack bot that replies to people. The Slack app in `slack/manifest.json` only posts messages.
+
+The human instructions are in `README.md`. Gate text is in `demos/manual-gates.json`. Build the plan with `scripts/plan.mjs` instead of inventing a second split:
 
 ```bash
-node --input-type=module -e "import { buildPlan } from './app/plan.mjs'; import { readFileSync } from 'fs'; const catalog = JSON.parse(readFileSync('demos/manual-gates.json','utf8')); console.log(JSON.stringify(buildPlan({ industry: 'Healthcare', useCase: '...', beats: ['...','...'] }, catalog), null, 2))"
+node --input-type=module -e "
+import { buildPlan } from './scripts/plan.mjs';
+import { readFileSync } from 'node:fs';
+const catalog = JSON.parse(readFileSync('demos/manual-gates.json','utf8'));
+const org = JSON.parse(readFileSync('demos/org.local.json','utf8'));
+const spec = buildPlan({
+  industry: 'Education',
+  company: 'Northbridge Academy',
+  useCase: 'An advisor picks up a student who waited two days for a course change.',
+  beats: ['Northbridge Academy is the school account, and Maya Chen is the student.', 'A case opens for a course change.']
+}, catalog, { enterpriseGrid: org.slack.enterpriseGrid });
+console.log(JSON.stringify(spec, null, 2));
+"
 ```
+
+`demos/education-advising.json` is that brief already planned for a single Slack workspace. Northbridge Academy is fictional.
 
 ## Before any write
 
-1. Read `demos/org.local.json`. If it is missing, stop. Tell the human to copy `demos/org.example.json` and fill it in. Point them at "Manual setup" in `README.md`. Do not invent org names.
-2. Identify the Salesforce org the session is connected to: company name and host.
-3. Stop when the connected name is listed in `productionOrgLabels`, or the connected host is listed in `productionOrgHosts`. Say which org you refused. Do not create or update records there.
-4. Stop when the connected name does not match `demoOrgLabel`. Say which org is connected and which label the config expects.
-5. If `trialExpires` is set and within 14 days, say so in the manual list. Keep going. You cannot renew an org.
+1. Read `demos/org.local.json`. If it is missing, stop. Tell the person to copy `demos/org.example.json` and fill it in. Point them at "Manual setup" in `README.md`.
+2. Identify the connected Salesforce org: company name and host.
+3. Stop when that name is in `productionOrgLabels` or that host is in `productionOrgHosts`. Say which org you refused.
+4. Stop when the connected name does not match `demoOrgLabel`.
+5. Read `slack.enterpriseGrid`. True means create a workspace with `admin.teams.create`. False means create a channel in the workspace where the app is already installed.
+6. If `trialExpires` is within 14 days, say so. You cannot renew an org.
 
 ## Intake
 
-Ask only for what the message left out:
+Ask only for what the message left out: industry, use case, ordered beats, and the company name when the beats do not name the account.
 
-- Industry
-- Use case, one or two sentences
-- Flow, as ordered beats (one action per line)
-- Company name, when the beats do not already name the account
+## Slack surface
 
-A worked brief is `demos/healthcare-prior-auth.json`. Harbor & Pine Health is fictional. Match that shape.
+| `slack.enterpriseGrid` | What you create |
+| --- | --- |
+| true | A workspace named for the industry, then a channel `#<demo id>` inside it. Requires the org-admin user token from an org-level install. |
+| false | A channel `#<demo id>` where Demo Publisher is installed. |
 
-## Map each beat
+Slack methods, in order, after the install exists:
+
+- Grid workspace: `admin.teams.create` with `team_name` set to the industry.
+- Channel: `conversations.create` with the channel name from the plan.
+- `conversations.invite` for the Demo Publisher bot.
+- Do not call `chat.postMessage` yourself except to prove the token. Ongoing posts belong to the Salesforce flow.
+
+If the install or the token is missing, print the `install-slack-app` and `slack-token` gates and stop before Salesforce writes.
+
+## Salesforce records
+
+Map each beat:
 
 | When the beat mentions | Create or update |
 | --- | --- |
-| account, customer, company, member, patient, payer, clinic, chart | Account |
+| account, customer, company, member, patient, payer, clinic, chart, school, student | Account |
 | case, claim, ticket, prior auth, authorization, support, incident, stall | Case |
 | opportunity, deal, pipeline, quote, renewal | Opportunity |
-| Slack, channel, swarm, notify, notification, post | Slack demo bundle record, plus a drafted message in the spec |
 
-A beat can map to more than one object. A beat that maps to none becomes a Case. Use an Industry picklist value the org already has. Query the describe before you set one.
+A beat that maps to none becomes a Case. Tag the Name or Subject, and the Description, with `[demo-builder:<id>]`. Use an Industry picklist value the org already has. Describe the object before you set one.
 
-## Split, then wait
+The worked education case is a Case whose Subject contains the tag, because the publisher flow watches Case.
 
-Print two lists before any Salesforce write.
+## Publisher flow
 
-**You do these.** Include a gate from `demos/manual-gates.json` when it applies:
+After the records exist, the demo is not done until Case changes post themselves.
 
-- `slack-connect` and `slack-admin` when any beat or the use case mentions Slack, a channel, a swarm, a notification, or a post
-- `salesforce-connect`, `org-config`, and `trial-check` on every brief
-- `metadata` when the brief asks for a custom object, a new field, Apex, a trigger, or a page layout
+- After-save flow on Case.
+- Filter: Subject contains `[demo-builder:<id>]`.
+- Create and Status changes both send `salesforce/slack-post.json` to `https://slack.com/api/chat.postMessage`.
+- Channel id is the one you just created.
+- Authorization is the named credential. Never paste the bot token into the flow, the spec, or git.
 
-Skip a gate the human has already finished. `org-config` is finished when `demos/org.local.json` is filled in. `salesforce-connect` is finished when the connected org already matches `demoOrgLabel`. `trial-check` is finished when `trialExpires` is empty or more than 14 days away.
+Deploy with the Salesforce CLI or the Metadata API when the org login can deploy. When it cannot, print the `flow-deploy` gate and stop with the flow still inactive. Say that records exist and Slack will stay quiet until the flow is deployed.
 
-**The agent does these.**
+## Save
 
-1. Confirm the org guard above.
-2. One step per beat: create or update the mapped records. Tag the Name or Subject, and the Description, with `[demo-builder:<id>]`.
-3. For a Slack beat, create the Slack demo bundle record and keep the drafted message in `slackDraft`. Do not post to Slack.
-4. Save the plan to `demos/<id>.json` with `salesforceIds` left as `[]`.
-5. Save returned record ids only in `demos/<id>.links.json`. That file is gitignored. Never copy an org id, a host, a login, or a session token into a committed file.
-
-Write Salesforce records only after the human says the remaining manual steps are done, or you have checked that they are already done.
-
-## Talk track
-
-Save `talkTrack` on the spec:
-
-- **Open.** The company, the industry, and the use case, said out loud.
-- **One line per beat.** Name the object on screen, then say the beat.
-- **Close.** If the story uses Slack, tell the presenter to post the drafted swarm in the channel they named. Otherwise, name who owns the next step. Mention the demo tag so the records can be found again.
+Write `demos/<id>.json` with `salesforceIds` as `[]`. Write record ids and the Slack channel id only to `demos/<id>.links.json`. Both secrets files are gitignored: `demos/org.local.json` and `demos/*.links.json`.
 
 ## Never
 
-- Deploy new objects, fields, layouts, or Apex. Tell the human that step is `metadata` and wait.
-- Write to an org listed as production, or to any org other than `demoOrgLabel`.
-- Post, install, or approve anything in Slack.
-- Commit `demos/org.local.json`, `demos/*.links.json`, or any real org name, host, or id.
+- Add a slash command, an app home conversation, or a bot people talk to.
+- Build a web app for the brief.
+- Create Slack workspaces when `slack.enterpriseGrid` is false.
+- Write to a production org, or to any Salesforce org other than `demoOrgLabel`.
+- Deploy new objects, fields, or Apex. The publisher flow is the only metadata this skill deploys.
+- Commit tokens, org ids, hosts, or real org names.

@@ -1,24 +1,24 @@
 {
   "gates": [
     {
-      "id": "slack-connect",
-      "title": "Connect Slack to your coding agent",
-      "detail": "Sign the agent into Slack. Write down the workspace and the channel this demo should use. The agent drafts the message. Sending it waits on that channel."
+      "id": "install-slack-app",
+      "title": "Install the Slack app from the manifest",
+      "detail": "In Slack, create an app from slack/manifest.json and install it on your org. On Enterprise Grid, install it on the org, not on one workspace, and approve it if an admin must. On a single workspace, remove oauth_config.scopes.user before installing. Skip this when the app is already installed."
     },
     {
-      "id": "slack-admin",
-      "title": "Approve the Slack app",
-      "detail": "Install or approve the Slack app in the workspace admin settings. An agent cannot click an admin approval prompt."
+      "id": "slack-token",
+      "title": "Store the bot token where Salesforce can use it",
+      "detail": "Copy the bot token from the install into a Salesforce named credential for https://slack.com/api. Keep the token out of git and out of the demo spec. On Enterprise Grid, also keep the org-admin user token in the agent secret store. Skip this when the credential already exists."
     },
     {
       "id": "salesforce-connect",
       "title": "Connect a Salesforce demo org",
-      "detail": "Sign the agent into a demo, sandbox, or developer org where you can create accounts and cases. If that org requires a hosted MCP server, create the external client app in Setup and finish the login in your agent."
+      "detail": "Sign the coding agent into a demo, sandbox, or developer org where it can create accounts and cases. If that org requires a hosted MCP server, create the external client app in Setup and finish the login."
     },
     {
       "id": "org-config",
-      "title": "Mark the demo org and the production orgs",
-      "detail": "Copy demos/org.example.json to demos/org.local.json. Set demoOrgLabel to the demo org's company name. List every production org under productionOrgLabels. Skip this step when the file is already filled in."
+      "title": "Mark the demo org, the production orgs, and the Slack org",
+      "detail": "Copy demos/org.example.json to demos/org.local.json. Set demoOrgLabel to the demo org's company name. List every production org under productionOrgLabels. Set slack.orgName and slack.enterpriseGrid. Skip this when the file is already filled in."
     },
     {
       "id": "trial-check",
@@ -26,9 +26,14 @@
       "detail": "If the demo org is a trial, put trialExpires in demos/org.local.json as YYYY-MM-DD. Renew or replace the org when that date is near. Skip this when the org does not expire."
     },
     {
+      "id": "flow-deploy",
+      "title": "Deploy the Salesforce flow that posts to Slack",
+      "detail": "The flow is an after-save flow on Case. It posts salesforce/slack-post.json when a tagged case is created or its status changes. Deploy it with the Salesforce CLI or Metadata API. Skip this when that flow is already active in the demo org."
+    },
+    {
       "id": "metadata",
       "title": "Create new objects, fields, or Apex yourself",
-      "detail": "This brief asks for metadata. Add it in Salesforce Setup, or take it out of the flow. The agent creates records on objects the org already has."
+      "detail": "This brief asks for metadata beyond the publisher flow. Add it in Salesforce Setup, or take it out of the flow. The agent creates records on objects the org already has."
     }
   ]
 }

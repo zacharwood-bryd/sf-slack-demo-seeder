@@ -1,6 +1,8 @@
 node_modules/
 .DS_Store
+.env
+.env.*
 
-# Real org names, hosts, and ids stay on your machine.
+# Real org names, hosts, tokens, and ids stay on your machine.
 demos/org.local.json
 demos/*.links.json

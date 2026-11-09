@@ -1,0 +1,127 @@
+{
+  "id": "education-advising",
+  "title": "Northbridge Academy",
+  "industry": "Education",
+  "company": "Northbridge Academy",
+  "useCase": "An advisor picks up a student case when Maya Chen has waited two days for a course change.",
+  "beats": [
+    "Northbridge Academy is the school account, and Maya Chen is the student.",
+    "A case opens for a course change, waiting on the advisor.",
+    "The case sits past two days.",
+    "The case moves to closed when the advisor approves the change."
+  ],
+  "slack": {
+    "mode": "channel",
+    "workspaceName": "",
+    "channel": "education-advising",
+    "message": "*Northbridge Academy*\nAn advisor picks up a student case when Maya Chen has waited two days for a course change.\n1. Northbridge Academy is the school account, and Maya Chen is the student.\n2. A case opens for a course change, waiting on the advisor.\n3. The case sits past two days.\n4. The case moves to closed when the advisor approves the change.\nTag: [demo-builder:education-advising]"
+  },
+  "manualSteps": [
+    {
+      "id": "install-slack-app",
+      "title": "Install the Slack app from the manifest",
+      "detail": "In Slack, create an app from slack/manifest.json and install it on your org. On Enterprise Grid, install it on the org, not on one workspace, and approve it if an admin must. On a single workspace, remove oauth_config.scopes.user before installing. Skip this when the app is already installed."
+    },
+    {
+      "id": "slack-token",
+      "title": "Store the bot token where Salesforce can use it",
+      "detail": "Copy the bot token from the install into a Salesforce named credential for https://slack.com/api. Keep the token out of git and out of the demo spec. On Enterprise Grid, also keep the org-admin user token in the agent secret store. Skip this when the credential already exists."
+    },
+    {
+      "id": "salesforce-connect",
+      "title": "Connect a Salesforce demo org",
+      "detail": "Sign the coding agent into a demo, sandbox, or developer org where it can create accounts and cases. If that org requires a hosted MCP server, create the external client app in Setup and finish the login."
+    },
+    {
+      "id": "org-config",
+      "title": "Mark the demo org, the production orgs, and the Slack org",
+      "detail": "Copy demos/org.example.json to demos/org.local.json. Set demoOrgLabel to the demo org's company name. List every production org under productionOrgLabels. Set slack.orgName and slack.enterpriseGrid. Skip this when the file is already filled in."
+    },
+    {
+      "id": "trial-check",
+      "title": "Check the trial date",
+      "detail": "If the demo org is a trial, put trialExpires in demos/org.local.json as YYYY-MM-DD. Renew or replace the org when that date is near. Skip this when the org does not expire."
+    },
+    {
+      "id": "flow-deploy",
+      "title": "Deploy the Salesforce flow that posts to Slack",
+      "detail": "The flow is an after-save flow on Case. It posts salesforce/slack-post.json when a tagged case is created or its status changes. Deploy it with the Salesforce CLI or Metadata API. Skip this when that flow is already active in the demo org."
+    }
+  ],
+  "agentSteps": [
+    {
+      "id": "confirm-org",
+      "title": "Confirm the demo org",
+      "detail": "Read demos/org.local.json. The connected Salesforce org must match demoOrgLabel. If its name is in productionOrgLabels, or its host is in productionOrgHosts, stop before any write."
+    },
+    {
+      "id": "slack-surface",
+      "title": "Channel: #education-advising",
+      "detail": "Create #education-advising with conversations.create in the workspace where Demo Publisher is installed. Invite the bot. Use that channel for every post."
+    },
+    {
+      "id": "beat-1",
+      "title": "Beat 1: Account",
+      "detail": "Create or update the Account. Northbridge Academy is the school account, and Maya Chen is the student. Tag the Name or Subject, and the Description, with [demo-builder:education-advising]. Use an Industry picklist value the org already has."
+    },
+    {
+      "id": "beat-2",
+      "title": "Beat 2: Case",
+      "detail": "Create or update the Case. A case opens for a course change, waiting on the advisor. Tag the Name or Subject, and the Description, with [demo-builder:education-advising]. Use an Industry picklist value the org already has."
+    },
+    {
+      "id": "beat-3",
+      "title": "Beat 3: Case",
+      "detail": "Create or update the Case. The case sits past two days. Tag the Name or Subject, and the Description, with [demo-builder:education-advising]. Use an Industry picklist value the org already has."
+    },
+    {
+      "id": "beat-4",
+      "title": "Beat 4: Case",
+      "detail": "Create or update the Case. The case moves to closed when the advisor approves the change. Tag the Name or Subject, and the Description, with [demo-builder:education-advising]. Use an Industry picklist value the org already has."
+    },
+    {
+      "id": "publish-flow",
+      "title": "Wire Salesforce changes to Slack",
+      "detail": "Activate an after-save flow on Case for records whose Subject contains [demo-builder:education-advising]. On create and on Status change, POST the body in salesforce/slack-post.json to the channel from this plan. The named credential holds the bot token."
+    },
+    {
+      "id": "save-spec",
+      "title": "Save the spec",
+      "detail": "Write this plan to demos/education-advising.json with salesforceIds left empty. Put record ids and the Slack channel id only in demos/education-advising.links.json."
+    }
+  ],
+  "talkTrack": [
+    {
+      "label": "Open",
+      "show": "Salesforce account, then the Slack channel",
+      "say": "Northbridge Academy is the education account. An advisor picks up a student case when Maya Chen has waited two days for a course change."
+    },
+    {
+      "label": "Beat 1",
+      "show": "Account",
+      "say": "Northbridge Academy is the school account, and Maya Chen is the student."
+    },
+    {
+      "label": "Beat 2",
+      "show": "Case",
+      "say": "A case opens for a course change, waiting on the advisor."
+    },
+    {
+      "label": "Beat 3",
+      "show": "Case",
+      "say": "The case sits past two days."
+    },
+    {
+      "label": "Beat 4",
+      "show": "Case",
+      "say": "The case moves to closed when the advisor approves the change."
+    },
+    {
+      "label": "Close",
+      "show": "#education-advising",
+      "say": "Change the case status in Salesforce. The Slack channel receives a new message from Demo Publisher without anyone typing in Slack."
+    }
+  ],
+  "salesforceIds": [],
+  "tag": "demo-builder:education-advising"
+}
