@@ -11,27 +11,22 @@
     "The case moves to closed once the note arrives and the request is approved."
   ],
   "slack": {
-    "mode": "channel",
-    "sectionName": "Demos",
-    "sectionHandle": "demos",
-    "channel": "healthcare-prior-auth",
+    "mode": "workspace",
+    "workspaceName": "Harbor & Pine Health",
+    "workspaceDomain": "healthcare-prior-auth",
+    "channel": "updates",
     "message": "*Harbor & Pine Health*\nA nurse practitioner requests prior authorization for an MRI, and the payer team sees the case in Slack when it stalls.\n1. Harbor & Pine Health is the clinic account, with Avery Cole as the patient.\n2. A case is filed for prior authorization of an MRI, waiting on the clinical note.\n3. The case stalls past the payer's two-day window.\n4. The case moves to closed once the note arrives and the request is approved.\nTag: [demo-builder:healthcare-prior-auth]"
   },
   "manualSteps": [
     {
       "id": "install-slack-app",
-      "title": "Install the Slack app in the workspace",
-      "detail": "Create a Slack app from slack/manifest.json and install it in the workspace where the demos should appear. Approve it if the workspace requires an admin. Skip this when Demo Publisher is already installed there."
+      "title": "Install the Slack app on the Enterprise Grid org",
+      "detail": "Create a Slack app from slack/manifest.json and install it on the Enterprise Grid org, not on a single workspace. Grant it to workspaces created later, and approve it if an admin must. Skip this when that org install already exists."
     },
     {
       "id": "slack-token",
-      "title": "Store the bot token where Salesforce can use it",
-      "detail": "Copy the bot token from the install into a Salesforce named credential for https://slack.com/api. Keep the token out of git and out of the demo spec. Skip this when that credential already exists."
-    },
-    {
-      "id": "user-groups",
-      "title": "Allow a Demos section in the sidebar",
-      "detail": "Shared sidebar sections need a paid Slack plan and permission to create user groups. In workspace permissions, allow user groups to be created. Skip this when @demos already exists and shows as a sidebar section."
+      "title": "Store the Slack tokens",
+      "detail": "Put the bot token in a Salesforce named credential for https://slack.com/api. Keep the org-admin user token, the one with admin.teams:write, in the coding agent's secret store. The agent uses it to create a workspace. Keep both tokens out of git. Skip this when both are already stored."
     },
     {
       "id": "salesforce-connect",
@@ -41,7 +36,7 @@
     {
       "id": "flow-deploy",
       "title": "Deploy the Salesforce flow that posts to Slack",
-      "detail": "The flow is an after-save flow on Case. It posts salesforce/slack-post.json when a tagged case is created or its status changes. Deploy it with the Salesforce CLI or Metadata API. Skip this when that flow is already active."
+      "detail": "The flow is an after-save flow on Case. It posts salesforce/slack-post.json into the new workspace when a tagged case is created or its status changes. Deploy it with the Salesforce CLI or Metadata API. Skip this when that flow is already active."
     }
   ],
   "agentSteps": [
@@ -52,8 +47,8 @@
     },
     {
       "id": "slack-surface",
-      "title": "Channel #healthcare-prior-auth in Demos",
-      "detail": "In the workspace where Demo Publisher is installed, create #healthcare-prior-auth with conversations.create and invite the bot. Create or update the @demos user group named Demos with enable_section true, and include #healthcare-prior-auth in its default channels. That group is the sidebar section for every demo. Add the person running the demo with usergroups.users.update when you have their Slack user id."
+      "title": "Workspace Harbor & Pine Health",
+      "detail": "Create a workspace named Harbor & Pine Health with admin.teams.create. Use team_domain healthcare-prior-auth. The app is already installed on the Enterprise Grid org and granted to new workspaces. In that workspace create #updates, invite Demo Publisher, and send every post there. Pass the new workspace id as team_id on workspace-level calls."
     },
     {
       "id": "beat-1",
@@ -114,8 +109,8 @@
     },
     {
       "label": "Close",
-      "show": "#healthcare-prior-auth",
-      "say": "Change the case status in Salesforce. The Slack channel receives a new message from Demo Publisher without anyone typing in Slack."
+      "show": "Harbor & Pine Health / #updates",
+      "say": "Open the Harbor & Pine Health workspace. Change the case status in Salesforce. Demo Publisher posts in #updates without anyone typing in Slack."
     }
   ],
   "salesforceIds": [],

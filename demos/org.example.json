@@ -1,7 +1,5 @@
 {
   "slack": {
-    "sectionName": "Demos",
-    "sectionHandle": "demos",
     "manifest": "slack/manifest.json"
   }
 }

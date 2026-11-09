@@ -76,7 +76,7 @@ function sentence(value) {
   return /[.!?]$/.test(text) ? text : `${text}.`;
 }
 
-export function buildPlan(input, catalog, options = {}) {
+export function buildPlan(input, catalog) {
   const industry = String(input.industry || "").trim();
   const useCase = String(input.useCase || "").trim();
   const company = String(input.company || "").trim() || `${industry} sample account`;
@@ -88,19 +88,19 @@ export function buildPlan(input, catalog, options = {}) {
   const id = slugify(input.id || `${industry} ${useCase}`);
   if (!id) throw new Error("Could not make an id from this brief.");
 
-  const sectionName = String(options.sectionName || "Demos").trim() || "Demos";
-  const sectionHandle = slugify(options.sectionHandle || "demos") || "demos";
   const blob = `${useCase}\n${beats.join("\n")}`;
   const wantsMetadata = METADATA.test(blob);
   const gates = catalog?.gates || catalog || [];
   const tag = `demo-builder:${id}`;
-  const channel = id.slice(0, 80);
+  const workspaceName = company;
+  const workspaceDomain = id.slice(0, 21).replace(/-+$/g, "");
+  const channel = "updates";
   const mapped = beats.map(mapBeat);
 
-  const manualIds = ["install-slack-app", "slack-token", "user-groups", "salesforce-connect", "flow-deploy"];
+  const manualIds = ["install-slack-app", "slack-token", "salesforce-connect", "flow-deploy"];
   if (wantsMetadata) manualIds.push("metadata");
 
-  const surface = `In the workspace where Demo Publisher is installed, create #${channel} with conversations.create and invite the bot. Create or update the @${sectionHandle} user group named ${sectionName} with enable_section true, and include #${channel} in its default channels. That group is the sidebar section for every demo. Add the person running the demo with usergroups.users.update when you have their Slack user id.`;
+  const surface = `Create a workspace named ${workspaceName} with admin.teams.create. Use team_domain ${workspaceDomain}. The app is already installed on the Enterprise Grid org and granted to new workspaces. In that workspace create #${channel}, invite Demo Publisher, and send every post there. Pass the new workspace id as team_id on workspace-level calls.`;
 
   const agentSteps = [
     {
@@ -111,7 +111,7 @@ export function buildPlan(input, catalog, options = {}) {
     },
     {
       id: "slack-surface",
-      title: `Channel #${channel} in ${sectionName}`,
+      title: `Workspace ${workspaceName}`,
       detail: surface,
     },
   ];
@@ -151,9 +151,9 @@ export function buildPlan(input, catalog, options = {}) {
     useCase,
     beats,
     slack: {
-      mode: "channel",
-      sectionName,
-      sectionHandle,
+      mode: "workspace",
+      workspaceName,
+      workspaceDomain,
       channel,
       message,
     },
@@ -172,8 +172,8 @@ export function buildPlan(input, catalog, options = {}) {
       })),
       {
         label: "Close",
-        show: `#${channel}`,
-        say: "Change the case status in Salesforce. The Slack channel receives a new message from Demo Publisher without anyone typing in Slack.",
+        show: `${workspaceName} / #${channel}`,
+        say: `Open the ${workspaceName} workspace. Change the case status in Salesforce. Demo Publisher posts in #${channel} without anyone typing in Slack.`,
       },
     ],
     salesforceIds: [],

@@ -2,18 +2,13 @@
   "gates": [
     {
       "id": "install-slack-app",
-      "title": "Install the Slack app in the workspace",
-      "detail": "Create a Slack app from slack/manifest.json and install it in the workspace where the demos should appear. Approve it if the workspace requires an admin. Skip this when Demo Publisher is already installed there."
+      "title": "Install the Slack app on the Enterprise Grid org",
+      "detail": "Create a Slack app from slack/manifest.json and install it on the Enterprise Grid org, not on a single workspace. Grant it to workspaces created later, and approve it if an admin must. Skip this when that org install already exists."
     },
     {
       "id": "slack-token",
-      "title": "Store the bot token where Salesforce can use it",
-      "detail": "Copy the bot token from the install into a Salesforce named credential for https://slack.com/api. Keep the token out of git and out of the demo spec. Skip this when that credential already exists."
-    },
-    {
-      "id": "user-groups",
-      "title": "Allow a Demos section in the sidebar",
-      "detail": "Shared sidebar sections need a paid Slack plan and permission to create user groups. In workspace permissions, allow user groups to be created. Skip this when @demos already exists and shows as a sidebar section."
+      "title": "Store the Slack tokens",
+      "detail": "Put the bot token in a Salesforce named credential for https://slack.com/api. Keep the org-admin user token, the one with admin.teams:write, in the coding agent's secret store. The agent uses it to create a workspace. Keep both tokens out of git. Skip this when both are already stored."
     },
     {
       "id": "salesforce-connect",
@@ -23,7 +18,7 @@
     {
       "id": "flow-deploy",
       "title": "Deploy the Salesforce flow that posts to Slack",
-      "detail": "The flow is an after-save flow on Case. It posts salesforce/slack-post.json when a tagged case is created or its status changes. Deploy it with the Salesforce CLI or Metadata API. Skip this when that flow is already active."
+      "detail": "The flow is an after-save flow on Case. It posts salesforce/slack-post.json into the new workspace when a tagged case is created or its status changes. Deploy it with the Salesforce CLI or Metadata API. Skip this when that flow is already active."
     },
     {
       "id": "metadata",

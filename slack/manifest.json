@@ -5,7 +5,7 @@
   },
   "display_information": {
     "name": "Demo Publisher",
-    "description": "Publishes Salesforce demo updates into Slack. People do not message this app.",
+    "description": "Publishes Salesforce demo updates into a new Slack workspace. People do not message this app.",
     "background_color": "#0f5f5b"
   },
   "features": {
@@ -24,13 +24,15 @@
         "chat:write.public",
         "groups:read",
         "groups:write",
-        "usergroups:read",
-        "usergroups:write"
+        "team:read"
+      ],
+      "user": [
+        "admin.teams:write"
       ]
     }
   },
   "settings": {
-    "org_deploy_enabled": false,
+    "org_deploy_enabled": true,
     "socket_mode_enabled": false,
     "token_rotation_enabled": false
   }
