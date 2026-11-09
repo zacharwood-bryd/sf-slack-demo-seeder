@@ -88,7 +88,8 @@ export function buildPlan(input, catalog, options = {}) {
   const id = slugify(input.id || `${industry} ${useCase}`);
   if (!id) throw new Error("Could not make an id from this brief.");
 
-  const enterpriseGrid = Boolean(options.enterpriseGrid);
+  const sectionName = String(options.sectionName || "Demos").trim() || "Demos";
+  const sectionHandle = slugify(options.sectionHandle || "demos") || "demos";
   const blob = `${useCase}\n${beats.join("\n")}`;
   const wantsMetadata = METADATA.test(blob);
   const gates = catalog?.gates || catalog || [];
@@ -96,23 +97,21 @@ export function buildPlan(input, catalog, options = {}) {
   const channel = id.slice(0, 80);
   const mapped = beats.map(mapBeat);
 
-  const manualIds = ["install-slack-app", "slack-token", "salesforce-connect", "org-config", "trial-check", "flow-deploy"];
+  const manualIds = ["install-slack-app", "slack-token", "user-groups", "salesforce-connect", "flow-deploy"];
   if (wantsMetadata) manualIds.push("metadata");
 
-  const surface = enterpriseGrid
-    ? `Create a Slack workspace named ${industry} with admin.teams.create, using the org-admin token. In that workspace create #${channel}, invite Demo Publisher, and use that channel for every post.`
-    : `Create #${channel} with conversations.create in the workspace where Demo Publisher is installed. Invite the bot. Use that channel for every post.`;
+  const surface = `In the workspace where Demo Publisher is installed, create #${channel} with conversations.create and invite the bot. Create or update the @${sectionHandle} user group named ${sectionName} with enable_section true, and include #${channel} in its default channels. That group is the sidebar section for every demo. Add the person running the demo with usergroups.users.update when you have their Slack user id.`;
 
   const agentSteps = [
     {
       id: "confirm-org",
       title: "Confirm the demo org",
       detail:
-        "Read demos/org.local.json. The connected Salesforce org must match demoOrgLabel. If its name is in productionOrgLabels, or its host is in productionOrgHosts, stop before any write.",
+        "Use the Salesforce org this session is signed into. Create the records and the publisher flow there.",
     },
     {
       id: "slack-surface",
-      title: enterpriseGrid ? `Workspace: ${industry}` : `Channel: #${channel}`,
+      title: `Channel #${channel} in ${sectionName}`,
       detail: surface,
     },
   ];
@@ -152,8 +151,9 @@ export function buildPlan(input, catalog, options = {}) {
     useCase,
     beats,
     slack: {
-      mode: enterpriseGrid ? "workspace" : "channel",
-      workspaceName: enterpriseGrid ? industry : "",
+      mode: "channel",
+      sectionName,
+      sectionHandle,
       channel,
       message,
     },

@@ -12,52 +12,48 @@
   ],
   "slack": {
     "mode": "channel",
-    "workspaceName": "",
+    "sectionName": "Demos",
+    "sectionHandle": "demos",
     "channel": "education-advising",
     "message": "*Northbridge Academy*\nAn advisor picks up a student case when Maya Chen has waited two days for a course change.\n1. Northbridge Academy is the school account, and Maya Chen is the student.\n2. A case opens for a course change, waiting on the advisor.\n3. The case sits past two days.\n4. The case moves to closed when the advisor approves the change.\nTag: [demo-builder:education-advising]"
   },
   "manualSteps": [
     {
       "id": "install-slack-app",
-      "title": "Install the Slack app from the manifest",
-      "detail": "In Slack, create an app from slack/manifest.json and install it on your org. On Enterprise Grid, install it on the org, not on one workspace, and approve it if an admin must. On a single workspace, remove oauth_config.scopes.user before installing. Skip this when the app is already installed."
+      "title": "Install the Slack app in the workspace",
+      "detail": "Create a Slack app from slack/manifest.json and install it in the workspace where the demos should appear. Approve it if the workspace requires an admin. Skip this when Demo Publisher is already installed there."
     },
     {
       "id": "slack-token",
       "title": "Store the bot token where Salesforce can use it",
-      "detail": "Copy the bot token from the install into a Salesforce named credential for https://slack.com/api. Keep the token out of git and out of the demo spec. On Enterprise Grid, also keep the org-admin user token in the agent secret store. Skip this when the credential already exists."
+      "detail": "Copy the bot token from the install into a Salesforce named credential for https://slack.com/api. Keep the token out of git and out of the demo spec. Skip this when that credential already exists."
+    },
+    {
+      "id": "user-groups",
+      "title": "Allow a Demos section in the sidebar",
+      "detail": "Shared sidebar sections need a paid Slack plan and permission to create user groups. In workspace permissions, allow user groups to be created. Skip this when @demos already exists and shows as a sidebar section."
     },
     {
       "id": "salesforce-connect",
-      "title": "Connect a Salesforce demo org",
-      "detail": "Sign the coding agent into a demo, sandbox, or developer org where it can create accounts and cases. If that org requires a hosted MCP server, create the external client app in Setup and finish the login."
-    },
-    {
-      "id": "org-config",
-      "title": "Mark the demo org, the production orgs, and the Slack org",
-      "detail": "Copy demos/org.example.json to demos/org.local.json. Set demoOrgLabel to the demo org's company name. List every production org under productionOrgLabels. Set slack.orgName and slack.enterpriseGrid. Skip this when the file is already filled in."
-    },
-    {
-      "id": "trial-check",
-      "title": "Check the trial date",
-      "detail": "If the demo org is a trial, put trialExpires in demos/org.local.json as YYYY-MM-DD. Renew or replace the org when that date is near. Skip this when the org does not expire."
+      "title": "Connect the Salesforce org to seed",
+      "detail": "Sign the coding agent into the Salesforce org that should receive the records and the publisher flow. A demo org is the usual choice. The agent uses whichever org that login opens."
     },
     {
       "id": "flow-deploy",
       "title": "Deploy the Salesforce flow that posts to Slack",
-      "detail": "The flow is an after-save flow on Case. It posts salesforce/slack-post.json when a tagged case is created or its status changes. Deploy it with the Salesforce CLI or Metadata API. Skip this when that flow is already active in the demo org."
+      "detail": "The flow is an after-save flow on Case. It posts salesforce/slack-post.json when a tagged case is created or its status changes. Deploy it with the Salesforce CLI or Metadata API. Skip this when that flow is already active."
     }
   ],
   "agentSteps": [
     {
       "id": "confirm-org",
       "title": "Confirm the demo org",
-      "detail": "Read demos/org.local.json. The connected Salesforce org must match demoOrgLabel. If its name is in productionOrgLabels, or its host is in productionOrgHosts, stop before any write."
+      "detail": "Use the Salesforce org this session is signed into. Create the records and the publisher flow there."
     },
     {
       "id": "slack-surface",
-      "title": "Channel: #education-advising",
-      "detail": "Create #education-advising with conversations.create in the workspace where Demo Publisher is installed. Invite the bot. Use that channel for every post."
+      "title": "Channel #education-advising in Demos",
+      "detail": "In the workspace where Demo Publisher is installed, create #education-advising with conversations.create and invite the bot. Create or update the @demos user group named Demos with enable_section true, and include #education-advising in its default channels. That group is the sidebar section for every demo. Add the person running the demo with usergroups.users.update when you have their Slack user id."
     },
     {
       "id": "beat-1",

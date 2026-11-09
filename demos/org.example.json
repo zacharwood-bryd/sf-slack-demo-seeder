@@ -1,14 +1,7 @@
 {
-  "demoOrgLabel": "Your demo org's company name",
-  "demoOrgHost": "your-demo.my.salesforce.com",
-  "demoOrgId": "",
-  "demoConnector": "the Salesforce connector your agent uses",
-  "trialExpires": "",
-  "productionOrgLabels": ["Your production org's company name"],
-  "productionOrgHosts": ["your-company.my.salesforce.com"],
   "slack": {
-    "orgName": "Your Slack org",
-    "enterpriseGrid": false,
+    "sectionName": "Demos",
+    "sectionHandle": "demos",
     "manifest": "slack/manifest.json"
   }
 }

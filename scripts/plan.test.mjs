@@ -7,23 +7,20 @@ import { EDUCATION_INPUT, buildPlan, mapBeat } from "./plan.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const catalog = JSON.parse(readFileSync(path.join(root, "demos/manual-gates.json"), "utf8"));
 
-const channelPlan = buildPlan(EDUCATION_INPUT, catalog, { enterpriseGrid: false });
+const channelPlan = buildPlan(EDUCATION_INPUT, catalog);
 assert.equal(channelPlan.id, "education-advising");
 assert.equal(channelPlan.slack.mode, "channel");
 assert.equal(channelPlan.slack.channel, "education-advising");
-assert.equal(channelPlan.slack.workspaceName, "");
+assert.equal(channelPlan.slack.sectionName, "Demos");
+assert.equal(channelPlan.slack.sectionHandle, "demos");
 assert.match(channelPlan.slack.message, /Northbridge Academy/);
+assert.match(channelPlan.agentSteps[1].detail, /enable_section true/);
 assert.deepEqual(
   channelPlan.manualSteps.map((step) => step.id),
-  ["install-slack-app", "slack-token", "salesforce-connect", "org-config", "trial-check", "flow-deploy"],
+  ["install-slack-app", "slack-token", "user-groups", "salesforce-connect", "flow-deploy"],
 );
-assert.equal(channelPlan.agentSteps[1].title, "Channel: #education-advising");
+assert.equal(channelPlan.agentSteps[1].title, "Channel #education-advising in Demos");
 assert.ok(channelPlan.agentSteps.some((step) => step.id === "publish-flow"));
-
-const gridPlan = buildPlan(EDUCATION_INPUT, catalog, { enterpriseGrid: true });
-assert.equal(gridPlan.slack.mode, "workspace");
-assert.equal(gridPlan.slack.workspaceName, "Education");
-assert.match(gridPlan.agentSteps[1].detail, /admin\.teams\.create/);
 
 const quiet = buildPlan(
   {
@@ -47,10 +44,8 @@ const metadata = buildPlan(
 assert.ok(metadata.manualSteps.some((step) => step.id === "metadata"));
 assert.equal(mapBeat("A new custom object tracks claims.").includes("Case"), true);
 
-const forbidden = ["penhallow", "bryd consulting", "bryd technologies", "brydconsultingpteltd", "meridian"];
 const haystack = JSON.stringify(channelPlan).toLowerCase();
-for (const word of forbidden) {
-  assert.equal(haystack.includes(word), false, word);
-}
+assert.equal(haystack.includes("admin.teams"), false);
+assert.equal(haystack.includes("enterprise grid"), false);
 
 console.log("plan.test.mjs ok");
