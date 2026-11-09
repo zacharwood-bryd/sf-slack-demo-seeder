@@ -23,7 +23,7 @@
     {
       "id": "metadata",
       "title": "Deploy metadata only if the agent is refused",
-      "detail": "The agent creates custom objects and custom fields through the Salesforce connection, and deploys Apex with the Salesforce CLI. Do this in Setup only when that login cannot deploy. Otherwise leave it to the agent."
+      "detail": "The agent creates custom objects and custom fields through the Salesforce MCP connection. Do this in Setup only when that connection cannot create them. This project does not use the Salesforce CLI, and it does not create or edit Apex."
     }
   ]
 }

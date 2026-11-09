@@ -34,7 +34,8 @@ export const HEALTHCARE_INPUT = {
 const CASE = /\b(cases?|claims?|tickets?|authorizations?|support|incidents?|complaints?|stalls?)\b|prior auth/i;
 const OPP = /\b(opportunities|opportunity|deals?|pipeline|quotes?|renewals?)\b/i;
 const ACCOUNT = /\b(accounts?|customers?|compan(?:y|ies)|members?|patients?|payers?|clinics?|charts?|schools?|students?)\b/i;
-const METADATA = /\b(custom objects?|new fields?|apex|triggers?|page layouts?|flexipages?)\b/i;
+const METADATA = /\b(custom objects?|new fields?|page layouts?|flexipages?)\b/i;
+const APEX = /\b(apex|triggers?)\b/i;
 
 export function slugify(value) {
   return String(value)
@@ -90,6 +91,7 @@ export function buildPlan(input, catalog) {
 
   const blob = `${useCase}\n${beats.join("\n")}`;
   const wantsMetadata = METADATA.test(blob);
+  const wantsApex = APEX.test(blob);
   const gates = catalog?.gates || catalog || [];
   const tag = `demo-builder:${id}`;
   const workspaceName = company;
@@ -113,12 +115,21 @@ export function buildPlan(input, catalog) {
     },
   ];
 
+  if (wantsApex) {
+    agentSteps.push({
+      id: "no-apex",
+      title: "Leave Apex out",
+      detail:
+        "This story mentions Apex. Do not create or edit Apex. Do not use the Salesforce CLI. Continue with records, objects, and fields through the Salesforce MCP connection, and tell the person Apex is out of scope.",
+    });
+  }
+
   if (wantsMetadata) {
     agentSteps.push({
       id: "metadata",
       title: "Create the metadata this story needs",
       detail:
-        "Create custom objects and custom fields through the Salesforce metadata connection before inserting records. Deploy Apex with the Salesforce CLI against this org. Apex is not created through the record calls. If that login cannot deploy, print the metadata gate and stop.",
+        "Create custom objects and custom fields through the Salesforce MCP connection before inserting records. Do not use the Salesforce CLI. Do not create or edit Apex. If the MCP connection cannot create the object or field, print the metadata gate and stop.",
     });
   }
 

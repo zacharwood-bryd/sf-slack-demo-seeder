@@ -51,8 +51,21 @@ assert.equal(metadata.manualSteps.some((step) => step.id === "metadata"), false)
 assert.ok(metadata.agentSteps.some((step) => step.id === "metadata"));
 assert.match(
   metadata.agentSteps.find((step) => step.id === "metadata").detail,
-  /Salesforce metadata connection/,
+  /Salesforce MCP connection/,
 );
+assert.equal(metadata.agentSteps.find((step) => step.id === "metadata").detail.includes("Salesforce CLI"), true);
+
+const apex = buildPlan(
+  {
+    industry: "Energy",
+    useCase: "Dispatch a field crew.",
+    beats: ["A case opens for the outage.", "An Apex trigger stamps the arrival time."],
+  },
+  catalog,
+);
+assert.ok(apex.agentSteps.some((step) => step.id === "no-apex"));
+assert.match(apex.agentSteps.find((step) => step.id === "no-apex").detail, /Do not create or edit Apex/);
+assert.equal(apex.agentSteps.find((step) => step.id === "no-apex").detail.includes("Salesforce CLI"), true);
 assert.equal(mapBeat("A new custom object tracks claims.").includes("Case"), true);
 
 const haystack = JSON.stringify(channelPlan).toLowerCase();

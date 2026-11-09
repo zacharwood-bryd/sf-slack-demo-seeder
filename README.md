@@ -20,7 +20,7 @@ flowchart LR
 
 Install the workspace app once, on a Slack Enterprise Grid org, and grant it to workspaces created later. Each demo is a new workspace. Salesforce records show up in that workspace only after you connect Salesforce for Slack to it. There is no flow in this project that posts to Slack.
 
-A Salesforce demo org is the usual place to seed. The agent uses the org it is signed into. This project does not keep a list of which orgs are allowed.
+A Salesforce demo org is the usual place to seed. The agent uses the org it is signed into through the Salesforce MCP connection. This project does not use the Salesforce CLI, and it does not create or edit Apex. It does not keep a list of which orgs are allowed.
 
 ## Manual setup
 
@@ -38,7 +38,7 @@ Keep that user token in the coding agent's secret store. The agent uses it for `
 
 ### 3. Connect Salesforce for seeding
 
-Sign the coding agent into the Salesforce org that should receive the records. Use the Salesforce connector, or a hosted MCP server whose external client app you create in Setup. This login lets the agent create records. It does not connect Slack.
+Sign the coding agent into the Salesforce org that should receive the records through its MCP connection. That connection is how the agent creates records, objects, and fields. This project does not use the Salesforce CLI, and it does not create or edit Apex. This login does not connect Slack.
 
 ### 4. Connect each new workspace with Salesforce for Slack
 
@@ -79,7 +79,7 @@ node scripts/plan.test.mjs
 - Installing the workspace app on the Enterprise Grid org and granting it to future workspaces.
 - Storing the org-admin token.
 - Connecting Salesforce for Slack to each new workspace. This one is every demo.
-- Deploying metadata in Setup, and only when the agent's Salesforce login cannot deploy. A new object or field is created through the Salesforce connection. Apex is deployed with the Salesforce CLI. Account, Case, and Opportunity are still the default when the story fits them.
+- Creating an object or field in Setup, and only when the MCP connection cannot create it. Account, Case, and Opportunity are the default when the story fits them. Apex is out of scope: the agent does not create or edit it, and it does not use the Salesforce CLI.
 
 ## License
 

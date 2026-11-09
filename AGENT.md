@@ -58,7 +58,7 @@ Map each beat:
 
 A beat that maps to none becomes a Case. Tag the Name or Subject, and the Description, with `[demo-builder:<id>]`. Use an Industry picklist value the org already has. Describe the object before you set one.
 
-Account, Case, and Opportunity are the default when the story fits them. When a beat needs a new object or field, create it through the Salesforce metadata connection before you insert records. When a beat needs Apex, deploy it with `sf project deploy` against this org. Apex is not created through the same calls that insert records. If that login cannot deploy, print the `metadata` gate and stop.
+Account, Case, and Opportunity are the default when the story fits them. When a beat needs a new object or field, create it through the Salesforce MCP connection before you insert records. Do not use the Salesforce CLI. Do not create or edit Apex. If the story depends on Apex, say that this project does not do that and leave Apex out. If the MCP connection cannot create the object or field, print the `metadata` gate and stop.
 
 ## Hand off the connector
 
@@ -76,4 +76,6 @@ Write `demos/<id>.json` with `salesforceIds` as `[]`. Write record ids and the S
 - Build a web app for the brief.
 - Put the demo in a workspace that already existed.
 - Call `chat.postMessage`, or deploy a flow, named credential, or HTTP callout, to publish records into Slack.
+- Use the Salesforce CLI.
+- Create or edit Apex.
 - Put an org name, a host, a user, or a token from the person's own systems into a committed file.
