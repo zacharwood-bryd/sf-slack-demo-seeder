@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Demo builder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,650&family=Outfit:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="top">
+      <a class="mark" href="#/new">
+        <span class="mark-kicker">Slack + Salesforce</span>
+        <span class="mark-name">Demo builder</span>
+      </a>
+      <nav class="nav">
+        <a href="#/new" data-nav="new">New brief</a>
+        <a href="#/library" data-nav="library">Library</a>
+      </nav>
+    </header>
+    <main id="app"></main>
+    <footer class="foot">
+      <p>The app stores the brief and the plan. Your coding agent, following the skill, writes the Salesforce records.</p>
+    </footer>
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

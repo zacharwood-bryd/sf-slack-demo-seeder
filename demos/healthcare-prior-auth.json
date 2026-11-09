@@ -1,0 +1,118 @@
+{
+  "id": "healthcare-prior-auth",
+  "title": "Harbor & Pine Health",
+  "industry": "Healthcare",
+  "company": "Harbor & Pine Health",
+  "useCase": "A nurse practitioner requests prior authorization for an MRI, and the payer team swarms in Slack when the case stalls.",
+  "beats": [
+    "Harbor & Pine Health is the member's clinic account, with Avery Cole as the patient on the chart.",
+    "A case is filed for prior authorization of an MRI, waiting on the clinical note.",
+    "The case stalls past the payer's two-day window.",
+    "Slack swarms the payer channel with the case, the missing note, and the owner.",
+    "The case moves to approved once the note arrives, and the swarm closes."
+  ],
+  "manualSteps": [
+    {
+      "id": "slack-connect",
+      "title": "Connect Slack to your coding agent",
+      "detail": "Sign the agent into Slack. Write down the workspace and the channel this demo should use. The agent drafts the message. Sending it waits on that channel."
+    },
+    {
+      "id": "slack-admin",
+      "title": "Approve the Slack app",
+      "detail": "Install or approve the Slack app in the workspace admin settings. An agent cannot click an admin approval prompt."
+    },
+    {
+      "id": "salesforce-connect",
+      "title": "Connect a Salesforce demo org",
+      "detail": "Sign the agent into a demo, sandbox, or developer org where you can create accounts and cases. If that org requires a hosted MCP server, create the external client app in Setup and finish the login in your agent."
+    },
+    {
+      "id": "org-config",
+      "title": "Mark the demo org and the production orgs",
+      "detail": "Copy demos/org.example.json to demos/org.local.json. Set demoOrgLabel to the demo org's company name. List every production org under productionOrgLabels. Skip this step when the file is already filled in."
+    },
+    {
+      "id": "trial-check",
+      "title": "Check the trial date",
+      "detail": "If the demo org is a trial, put trialExpires in demos/org.local.json as YYYY-MM-DD. Renew or replace the org when that date is near. Skip this when the org does not expire."
+    }
+  ],
+  "agentSteps": [
+    {
+      "id": "confirm-org",
+      "title": "Confirm the demo org",
+      "detail": "Read demos/org.local.json. The connected Salesforce org must match demoOrgLabel. If its name is in productionOrgLabels, or its host is in productionOrgHosts, stop before any write."
+    },
+    {
+      "id": "beat-1",
+      "title": "Beat 1: Account",
+      "detail": "Create or update the Account. Harbor & Pine Health is the member's clinic account, with Avery Cole as the patient on the chart. Tag the Name or Subject, and the Description, with [demo-builder:healthcare-prior-auth]. Use an Industry picklist value the org already has."
+    },
+    {
+      "id": "beat-2",
+      "title": "Beat 2: Case",
+      "detail": "Create or update the Case. A case is filed for prior authorization of an MRI, waiting on the clinical note. Tag the Name or Subject, and the Description, with [demo-builder:healthcare-prior-auth]. Use an Industry picklist value the org already has."
+    },
+    {
+      "id": "beat-3",
+      "title": "Beat 3: Account + Case",
+      "detail": "Create or update the Account and Case. The case stalls past the payer's two-day window. Tag the Name or Subject, and the Description, with [demo-builder:healthcare-prior-auth]. Use an Industry picklist value the org already has."
+    },
+    {
+      "id": "beat-4",
+      "title": "Beat 4: Account + Case + Slack demo bundle record",
+      "detail": "Create or update the Account and Case. Create a Slack demo bundle record and draft the message in the spec. Leave the actual Slack post to the person running the demo. Slack swarms the payer channel with the case, the missing note, and the owner. Tag the Name or Subject, and the Description, with [demo-builder:healthcare-prior-auth]. Use an Industry picklist value the org already has."
+    },
+    {
+      "id": "beat-5",
+      "title": "Beat 5: Case + Slack demo bundle record",
+      "detail": "Create or update the Case. Create a Slack demo bundle record and draft the message in the spec. Leave the actual Slack post to the person running the demo. The case moves to approved once the note arrives, and the swarm closes. Tag the Name or Subject, and the Description, with [demo-builder:healthcare-prior-auth]. Use an Industry picklist value the org already has."
+    },
+    {
+      "id": "save-spec",
+      "title": "Save the talk track",
+      "detail": "Write the plan to demos/healthcare-prior-auth.json. Put record ids only in demos/healthcare-prior-auth.links.json, which stays gitignored."
+    }
+  ],
+  "talkTrack": [
+    {
+      "label": "Open",
+      "show": "Account",
+      "say": "Harbor & Pine Health is the healthcare account on screen. A nurse practitioner requests prior authorization for an MRI, and the payer team swarms in Slack when the case stalls."
+    },
+    {
+      "label": "Beat 1",
+      "show": "Account",
+      "say": "Harbor & Pine Health is the member's clinic account, with Avery Cole as the patient on the chart."
+    },
+    {
+      "label": "Beat 2",
+      "show": "Case",
+      "say": "A case is filed for prior authorization of an MRI, waiting on the clinical note."
+    },
+    {
+      "label": "Beat 3",
+      "show": "Account, Case",
+      "say": "The case stalls past the payer's two-day window."
+    },
+    {
+      "label": "Beat 4",
+      "show": "Account, Case, Slack demo bundle record",
+      "say": "Slack swarms the payer channel with the case, the missing note, and the owner."
+    },
+    {
+      "label": "Beat 5",
+      "show": "Case, Slack demo bundle record",
+      "say": "The case moves to approved once the note arrives, and the swarm closes."
+    },
+    {
+      "label": "Close",
+      "show": "Slack draft",
+      "say": "Leave the Salesforce record on screen and post the drafted swarm in the channel you named. The agent writes the words. You send them."
+    }
+  ],
+  "salesforceIds": [],
+  "slackDraft": "*Harbor & Pine Health*\nA nurse practitioner requests prior authorization for an MRI, and the payer team swarms in Slack when the case stalls.\n1. Harbor & Pine Health is the member's clinic account, with Avery Cole as the patient on the chart.\n2. A case is filed for prior authorization of an MRI, waiting on the clinical note.\n3. The case stalls past the payer's two-day window.\n4. Slack swarms the payer channel with the case, the missing note, and the owner.\n5. The case moves to approved once the note arrives, and the swarm closes.\nTag: [demo-builder:healthcare-prior-auth]",
+  "tag": "demo-builder:healthcare-prior-auth"
+}
